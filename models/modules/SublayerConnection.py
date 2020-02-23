@@ -1,6 +1,5 @@
 import torch.nn as nn
-# from models.modules.LayerNorm import LayerNorm
-from torch.nn import LayerNorm
+from models.modules.LayerNorm import LayerNorm
 
 class SublayerConnection(nn.Module):
     def __init__(self, size, dropout):
@@ -9,4 +8,4 @@ class SublayerConnection(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, sublayer):
-        return x + self.dropout(sublayer(self.norm(x)))
+        return self.norm(x + self.dropout(sublayer(x)))

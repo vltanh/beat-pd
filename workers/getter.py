@@ -24,7 +24,7 @@ class NetworkGetter(Getter):
         
 # ---------------------------------------------------------------------------------
 
-from utils.losses import CrossEntropyLoss
+from workers.losses import CrossEntropyLoss
 from torch.nn import MSELoss
         
 class LossGetter(Getter):

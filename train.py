@@ -1,10 +1,10 @@
 import os
 import argparse
-import json
+import yaml
 import time
 
-from utils.getter import NetworkGetter, LossGetter, OptimizerGetter, SchedulerGetter, DatasetGetter, VisualizerGetter, MetricGetter
-from utils.trainer import Trainer
+from workers.getter import NetworkGetter, LossGetter, OptimizerGetter, SchedulerGetter, DatasetGetter, VisualizerGetter, MetricGetter
+from workers.trainer import Trainer
 from datasets.cispd import CISPDTrain
 
 import torch
@@ -13,9 +13,19 @@ import random
 
 manualSeed = 3698
 
-np.random.seed(manualSeed)
-random.seed(manualSeed)
-torch.manual_seed(manualSeed)
+def set_seed(seed):
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.manual_seed(seed)
+
+def get_device(config):
+    dev_id = 'cuda:{}'.format(config['gpus']) \
+             if torch.cuda.is_available() and config.get('gpus', False) \
+             else 'cpu'
+    return torch.device(dev_id), dev_id
+
+def get_train_id(_id, current_time):
+    return '%s_%s' % (_id, current_time)
 
 def train(config):
     '''
@@ -33,22 +43,17 @@ def train(config):
     # TODO: parallelize training
     
     # Specify device
-    dev_id = 'cuda:{}'.format(config['gpus']) \
-             if torch.cuda.is_available() and config.get('gpus', False) \
-             else 'cpu'
-    device = torch.device(dev_id)
+    device, dev_id = get_device(config)
     
     # -----------------------------------------------------------------
     
     # Training start time
     current_time = time.strftime('%b%d_%H-%M-%S', time.gmtime())
     print('Training starts at', current_time)
-    
-    # -----------------------------------------------------------------
-    
+     
     # Get train id
-    train_id = '%s_%s' % (config['id'], current_time)
-    
+    train_id = get_train_id(config['id'], current_time)
+            
     # -----------------------------------------------------------------
 
     # TODO: think about continue training on a different datasets
@@ -62,8 +67,10 @@ def train(config):
         # TODO: what to load (arch is a must, what about the rest)?
         for cfg_item in ['arch', 'loss', 'optimizer', 'scheduler']:
             config[cfg_item] = checkpoint['config'][cfg_item]
-            
+
     # -----------------------------------------------------------------
+
+    set_seed(manualSeed)
 
     # Define network
     net = NetworkGetter().get(config=config['arch']).to(device)
@@ -111,12 +118,13 @@ def train(config):
 
     # -----------------------------------------------------------------
     
+    set_seed(manualSeed)
+
     # Load datasets
-    # train_dataloader = DatasetGetter().get(config=config['train_dataset'])
-    # val_dataloader = DatasetGetter().get(config=config['val_dataset'])
     train_dataset = CISPDTrain(data_path='data/cis-pd/training_data', 
                                label_path='data/cis-pd/data_labels/CIS-PD_Training_Data_IDs_Labels.csv')
-    train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [len(train_dataset) - len(train_dataset) // 5, len(train_dataset) // 5])
+    train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, 
+                                                               [len(train_dataset) - len(train_dataset) // 5, len(train_dataset) // 5])
     train_dataloader = torch.utils.data.DataLoader(train_dataset, num_workers=6, batch_size=1, shuffle=True)
     val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=6, batch_size=1)
     
@@ -139,7 +147,8 @@ def main():
 
     # Load configurations
     assert args.config, 'Config file not found'
-    cfg = json.load(open(args.config))
+    cfg = yaml.load(open(args.config), Loader=yaml.Loader)
+    print(cfg)
     
     # Train on loaded config
     train(config=cfg)

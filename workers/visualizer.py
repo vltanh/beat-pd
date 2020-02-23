@@ -4,7 +4,7 @@ import io
 from PIL import Image
 import matplotlib.pyplot as plt
 
-from utils.image import Denormalize
+from workers.image import Denormalize
 
 import torch
 from torch.nn import functional as F

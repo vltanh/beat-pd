@@ -4,9 +4,9 @@ import time
 import os
 import matplotlib.pyplot as plt
 
-from utils.metrics import PixelAccuracy, IoU
-from utils.logger import Logger, TensorboardHelper
-from utils.visualizer import ADE20KVisualizer
+from workers.metrics import PixelAccuracy, IoU
+from workers.logger import Logger, TensorboardHelper
+from workers.visualizer import ADE20KVisualizer
 
 import torch
 

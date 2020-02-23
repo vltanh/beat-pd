@@ -1,0 +1,51 @@
+id: TestFlow
+gpus: 0
+checkpoint: null
+trainer:
+    output_path: logs
+    nepochs: 100
+    log_step: 1
+    val_step: 1
+    save_step: 1
+    save:
+        current: true
+        best_loss: true
+arch:
+    type: ToyModel
+    config:
+        method: attention
+train_dataset: 
+    type: CISPDTrain
+    config: 
+        data_path: data/cis-pd/training_data
+        label_path: data/cis-pd/data_labels/CIS-PD_Training_Data_IDs_Labels.csv
+    loader_config: 
+        batch_size: 1
+        shuffle: true
+        num_workers: 6
+val_dataset: 
+    type: CISPDTrain
+    config: 
+        data_path: data/cis-pd/training_data
+        label_path: data/cis-pd/data_labels/CIS-PD_Training_Data_IDs_Labels.csv
+    loader_config: 
+        batch_size: 1
+        shuffle: true
+        num_workers: 6
+loss: 
+    type: MSE
+    config: {}
+optimizer: 
+    type: SGD
+    config: 
+        lr: 0.001
+scheduler: 
+    type: ReduceLROnPlateau
+    config: 
+        mode: min
+        factor: 0.5
+        patience: 5 
+        verbose: true
+metrics: {}
+        
+    
