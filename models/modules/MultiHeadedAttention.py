@@ -5,6 +5,8 @@ import numpy as np
 
 from models.modules.utils import clones
 
+import matplotlib.pyplot as plt
+
 class MultiHeadedAttention(nn.Module):
     def __init__(self, h, d_model, dropout):
         super().__init__()

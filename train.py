@@ -20,7 +20,7 @@ def set_seed(seed):
 
 def get_device(config):
     dev_id = 'cuda:{}'.format(config['gpus']) \
-             if torch.cuda.is_available() and config.get('gpus', False) \
+             if torch.cuda.is_available() and config.get('gpus', None) is not None \
              else 'cpu'
     return torch.device(dev_id), dev_id
 
@@ -148,7 +148,6 @@ def main():
     # Load configurations
     assert args.config, 'Config file not found'
     cfg = yaml.load(open(args.config), Loader=yaml.Loader)
-    print(cfg)
     
     # Train on loaded config
     train(config=cfg)
